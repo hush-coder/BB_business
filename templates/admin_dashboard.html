@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}管理员仪表板 - 商业平台{% endblock %}
+
+{% block content %}
+<h2>管理员仪表板</h2>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">用户管理</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>角色</th>
+                                <th>注册时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.role }}</td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    {% if user.is_active %}
+                                        <span class="badge bg-success">活跃</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">禁用</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.role == 'dealer' and not user.payment_status %}
+                                        <a href="{{ url_for('approve_dealer', dealer_id=user.id) }}" 
+                                           class="btn btn-sm btn-success">批准经销商</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">产品管理</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>产品名称</th>
+                                <th>工厂</th>
+                                <th>价格</th>
+                                <th>发布时间</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>{{ product.id }}</td>
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.factory.username }}</td>
+                                <td>¥{{ "%.2f"|format(product.price) }}</td>
+                                <td>{{ product.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    {% if product.is_active %}
+                                        <span class="badge bg-success">上架</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">下架</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

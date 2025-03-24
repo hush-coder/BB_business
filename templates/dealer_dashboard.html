@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}经销商控制台 - BB商业平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- 产品列表 -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-box me-2"></i>可用产品</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for product in products %}
+                        <div class="col-md-6 mb-4">
+                            <div class="product-card">
+                                <h3>{{ product.name }}</h3>
+                                <p class="text-muted">{{ product.description }}</p>
+                                <p class="price">¥{{ "%.2f"|format(product.price) }}</p>
+                                <button class="btn btn-primary contact-factory" 
+                                        data-factory-id="{{ product.factory_id }}"
+                                        data-product-name="{{ product.name }}">
+                                    <i class="fas fa-comment me-2"></i>联系工厂
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 消息列表 -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-envelope me-2"></i>我的消息</h4>
+                </div>
+                <div class="card-body">
+                    <div class="message-list" id="messageList">
+                        {% for message in messages %}
+                        <div class="message-item">
+                            <small class="text-muted">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            <p class="mb-0">{{ message.content }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 发送消息模态框 -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">发送消息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="messageForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" id="factory_id" name="factory_id">
+                    <div class="mb-3">
+                        <label for="message" class="form-label">消息内容</label>
+                        <textarea class="form-control" id="message" name="content" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="sendMessage">
+                    <i class="fas fa-paper-plane me-2"></i>发送
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
+    const messageForm = document.getElementById('messageForm');
+    const factoryIdInput = document.getElementById('factory_id');
+    const messageInput = document.getElementById('message');
+    const sendButton = document.getElementById('sendMessage');
+    const messageList = document.getElementById('messageList');
+
+    // 点击联系工厂按钮
+    document.querySelectorAll('.contact-factory').forEach(button => {
+        button.addEventListener('click', function() {
+            const factoryId = this.dataset.factoryId;
+            const productName = this.dataset.productName;
+            factoryIdInput.value = factoryId;
+            messageInput.value = `您好，我对您的产品"${productName}"很感兴趣，想了解更多信息。`;
+            messageModal.show();
+        });
+    });
+
+    // 发送消息
+    sendButton.addEventListener('click', function() {
+        if (!messageForm.checkValidity()) {
+            messageForm.reportValidity();
+            return;
+        }
+
+        const formData = new FormData(messageForm);
+        const factoryId = factoryIdInput.value;
+
+        // 禁用发送按钮，显示加载状态
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>发送中...';
+
+        fetch(`/message/send/${factoryId}`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrf_token')
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || '发送失败');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // 添加新消息到列表
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message-item fade-in';
+                messageDiv.innerHTML = `
+                    <small class="text-muted">${data.timestamp}</small>
+                    <p class="mb-0">${messageInput.value}</p>
+                `;
+                messageList.insertBefore(messageDiv, messageList.firstChild);
+
+                // 显示成功提示
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    消息发送成功
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+
+                // 关闭模态框，重置表单
+                messageModal.hide();
+                messageForm.reset();
+            } else {
+                throw new Error(data.message || '发送失败');
+            }
+        })
+        .catch(error => {
+            // 显示错误提示
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+        })
+        .finally(() => {
+            // 恢复发送按钮状态
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>发送';
+        });
+    });
+});
+</script>
+{% endblock %} 

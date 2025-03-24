@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 商业平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="jumbotron text-center py-5">
+            <h1 class="display-4">欢迎来到商业平台</h1>
+            <p class="lead">连接工厂与经销商，打造高效商业生态系统</p>
+            {% if not current_user.is_authenticated %}
+            <hr class="my-4">
+            <p>立即加入我们，开启您的商业之旅</p>
+            <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}" role="button">注册账号</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h3 class="card-title">工厂</h3>
+                <p class="card-text">发布产品信息，与经销商直接沟通，扩大销售渠道</p>
+                <ul class="list-unstyled">
+                    <li>✓ 免费注册</li>
+                    <li>✓ 产品管理</li>
+                    <li>✓ 实时沟通</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h3 class="card-title">经销商</h3>
+                <p class="card-text">浏览产品信息，与工厂直接洽谈，获取优质货源</p>
+                <ul class="list-unstyled">
+                    <li>✓ 产品浏览</li>
+                    <li>✓ 在线沟通</li>
+                    <li>✓ 便捷采购</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h3 class="card-title">管理员</h3>
+                <p class="card-text">管理平台运营，审核用户信息，维护平台秩序</p>
+                <ul class="list-unstyled">
+                    <li>✓ 用户管理</li>
+                    <li>✓ 内容审核</li>
+                    <li>✓ 系统维护</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center">平台特色</h3>
+                <div class="row mt-4">
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                        <h5>安全可靠</h5>
+                        <p>严格的身份验证和交易保障</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-bolt fa-3x mb-3"></i>
+                        <h5>高效便捷</h5>
+                        <p>快速匹配供需，即时沟通</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-chart-line fa-3x mb-3"></i>
+                        <h5>数据透明</h5>
+                        <p>清晰的产品信息和价格展示</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-handshake fa-3x mb-3"></i>
+                        <h5>互利共赢</h5>
+                        <p>促进工厂与经销商共同发展</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
